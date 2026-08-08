@@ -76,7 +76,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\MyFile\작업\1stProject(Graphics)\include;D:\MyFile\작업\1stProject(Graphics)\third_party\ImGUI\backends;D:\MyFile\작업\1stProject(Graphics)\third_party\ImGUI</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\masse\OneDrive\문서\GitHub\Mini-Graphics-Engine-by-OpenGL-\include;C:\Users\masse\OneDrive\문서\GitHub\Mini-Graphics-Engine-by-OpenGL-\third_party\ImGUI;C:\Users\masse\OneDrive\문서\GitHub\Mini-Graphics-Engine-by-OpenGL-\third_party\ImGUI\backends</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -96,7 +96,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\MyFile\작업\1stProject(Graphics)\include;D:\MyFile\작업\1stProject(Graphics)\third_party\ImGUI\backends;D:\MyFile\작업\1stProject(Graphics)\third_party\ImGUI</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\masse\OneDrive\문서\GitHub\Mini-Graphics-Engine-by-OpenGL-\include;C:\Users\masse\OneDrive\문서\GitHub\Mini-Graphics-Engine-by-OpenGL-\third_party\ImGUI;C:\Users\masse\OneDrive\문서\GitHub\Mini-Graphics-Engine-by-OpenGL-\third_party\ImGUI\backends</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -116,7 +116,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\MyFile\작업\1stProject(Graphics)\include;D:\MyFile\작업\1stProject(Graphics)\third_party\ImGUI\backends;D:\MyFile\작업\1stProject(Graphics)\third_party\ImGUI</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\masse\OneDrive\문서\GitHub\Mini-Graphics-Engine-by-OpenGL-\include;C:\Users\masse\OneDrive\문서\GitHub\Mini-Graphics-Engine-by-OpenGL-\third_party\ImGUI;C:\Users\masse\OneDrive\문서\GitHub\Mini-Graphics-Engine-by-OpenGL-\third_party\ImGUI\backends</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -136,7 +136,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\MyFile\작업\1stProject(Graphics)\include;D:\MyFile\작업\1stProject(Graphics)\third_party\ImGUI\backends;D:\MyFile\작업\1stProject(Graphics)\third_party\ImGUI</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\masse\OneDrive\문서\GitHub\Mini-Graphics-Engine-by-OpenGL-\include;C:\Users\masse\OneDrive\문서\GitHub\Mini-Graphics-Engine-by-OpenGL-\third_party\ImGUI;C:\Users\masse\OneDrive\문서\GitHub\Mini-Graphics-Engine-by-OpenGL-\third_party\ImGUI\backends</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

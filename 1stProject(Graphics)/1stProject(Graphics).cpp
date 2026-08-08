@@ -11,17 +11,18 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <cmath>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
-#include <Shader.h> //자체 헤더1
-#include <mathoperation.h> //자체 헤더2
+#include <Shader.h> //Shader header
+#include <mathoperation.h> //Custom math header
 
 using namespace std;
 using namespace Mmt;
 
 Mathmethod math;
 
-int SCR_WIDTH = 1280; int SCR_HEIGHT = 720;
+int SCR_WIDTH = 1920; int SCR_HEIGHT = 1080;
 
 Mathmethod::Vec3 position;
 Mathmethod::Vec3 color;
@@ -37,7 +38,7 @@ Mathmethod::Vec3 telePos;
 float movespeed = 0.3f;
 float lightColor[3] = { 1.0f, 1.0f, 1.0f };
 float Elevation = 45.0f;
-float Azimuth = 45.0f;
+float Azimuth = 30.0f;
 float BackgroundColor[4] = { 0.45f, 0.65f, 0.85f, 1.0f };
 bool isWalkMode = false;      // false: 자유 시점 / true: 1인칭 인간 시점
 float humanEyeHeight = 0;
@@ -50,13 +51,21 @@ float rotationSpeed = 0.5f;
 float fov = 45.0f;
 int currentMode = 0;
 
+struct Material
+{
+	Mathmethod::Vec3 ambientColor = Mathmethod::Vec3(0.1f, 0.1f, 0.1f);
+	Mathmethod::Vec3 diffuseColor = Mathmethod::Vec3(0.8f, 0.8f, 0.8f);
+	Mathmethod::Vec3 specularColor = Mathmethod::Vec3(0.2f, 0.2f, 0.2f);
+	float Shininess = 32.0f;
+	float SpecularStrength = 1.0f;
+};
 struct SubMesh 
 {
 	unsigned int VAO = 0;
 	unsigned int VBO = 0;
 	unsigned int vertexCount = 0;
 	unsigned int textureID = 0;
-	Mathmethod::Vec3 diffuseColor = Mathmethod::Vec3(0.8f, 0.8f, 0.8f); 
+	Material material;
 };
 vector<SubMesh> g_meshes;
 vector<unsigned int> g_materialTextures;
@@ -97,7 +106,7 @@ void UIDesign()
 	colors[ImGuiCol_TitleBg] = ImVec4(0.09f, 0.12f, 0.14f, 1.00f);
 	colors[ImGuiCol_TitleBgActive] = ImVec4(0.14f, 0.18f, 0.22f, 1.00f);
 }
-void UIset(GLFWwindow* window,float* lightColor,float elevation,float azimuth,float* backgroundColor,Mathmethod::Mat4 viewMat) //ImGui 인터페이스 설정
+void UIset(GLFWwindow* window,float* lightColor,float& elevation,float& azimuth,float* backgroundColor,Mathmethod::Mat4 viewMat) //ImGui Interface set
 {
 	UIDesign();
 	ImGuiIO& io = ImGui::GetIO();
@@ -113,8 +122,7 @@ void UIset(GLFWwindow* window,float* lightColor,float elevation,float azimuth,fl
 			ImGui::Selectable("Main Camera");
 			if (ImGui::TreeNode("Meshes "))
 			{
-				// 선택한 서브메쉬의 인스펙터 정보를 볼 수 있도록 연결
-				for (int i = 0; i < 5; i++) { // 예시 5개
+				for (int i = 0; i < g_meshes.size(); i++) { 
 					std::string name = "SubMesh_" + std::to_string(i);
 					ImGui::Selectable(name.c_str());
 				}
@@ -137,7 +145,6 @@ void UIset(GLFWwindow* window,float* lightColor,float elevation,float azimuth,fl
 		}
 		if (ImGui::CollapsingHeader("Camera Controller", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			// 카메라 모드 전환 패널
 			const char* modes[] = { "Free Fly Mode", "Human Walk Mode" };		
 			if (ImGui::Combo("Mode", &currentMode, modes, IM_ARRAYSIZE(modes)))
 			{
@@ -156,8 +163,6 @@ void UIset(GLFWwindow* window,float* lightColor,float elevation,float azimuth,fl
 		}
 	}
 	ImGui::End();
-
-	// 3. 하단: Console / Statistics / Matrix Viewer (실시간 정보)
 	ImGui::SetNextWindowPos(ImVec2(0, screenH * 0.75f), ImGuiCond_Always);
 	ImGui::SetNextWindowSize(ImVec2(screenW, screenH * 0.25f), ImGuiCond_Always);
 	ImGui::Begin("Console / Statistics", nullptr, ImGuiWindowFlags_NoCollapse);
@@ -181,8 +186,6 @@ int loadTexture(char const* path)
 {
 	unsigned int texID;
 	glGenTextures(1, &texID);
-
-	stbi_set_flip_vertically_on_load(true);
 	int width, height, nrComponents;
 	unsigned char* data = stbi_load(path, &width, &height, &nrComponents, 0);
 	if (data)
@@ -199,11 +202,11 @@ int loadTexture(char const* path)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		stbi_image_free(data);
-		std::cout << path << " 텍스처 로드 성공! (" << width << "x" << height << ")" << std::endl;
+		std::cout << path << " Load Success! (" << width << "x" << height << ")" << std::endl;
 	}
 	else
 	{
-		std::cout << "텍스처 로드 실패: " << path << std::endl;
+		std::cout << "Load failed: " << path << std::endl;
 		stbi_image_free(data);
 		return 0;
 	}
@@ -243,7 +246,7 @@ void ProcessMaterials(const aiScene* scene, const string& modelPath )
 				texturePath = rawFileName;
 			}
 			texID = loadTexture(texturePath.c_str());
-			cout << "재질 " << i << "번 텍스처 연결됨: " << texturePath << std::endl;
+			cout << "material " << i << " texture linked: " << texturePath << std::endl;
 		}
 		g_materialTextures.push_back(texID);
 	}
@@ -308,11 +311,31 @@ void ProcessMesh(aiMesh* mesh,const aiScene* scene)
 	if (matIndex >= 0)
 	{
 		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-		aiColor3D color(1.0f, 1.0f, 1.0f);
-		if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_DIFFUSE, color))
+		aiColor3D ambient(0.8f, 0.8f, 0.8f);
+		aiColor3D diffuse(1.0f, 1.0f, 1.0f);
+		aiColor3D specular(0.2f, 0.2f, 0.2f);
+		float shininess = 32.0f;
+		float shininessStrength = 1.0f;
+		if (material->Get(AI_MATKEY_COLOR_AMBIENT, ambient)== AI_SUCCESS)
 		{
-			if (color.r <= 0.001f && color.g <= 0.001f && color.b <= 0.001f) subMesh.diffuseColor = Mathmethod::Vec3(1.0f , 1.0f, 1.0f);
-			else subMesh.diffuseColor = Mathmethod::Vec3(color.r, color.g, color.b);
+			subMesh.material.ambientColor = Mathmethod::Vec3(ambient.r, ambient.g, ambient.b);
+		}
+		if (AI_SUCCESS == material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse))
+		{
+			if (diffuse.r <= 0.001f && diffuse.g <= 0.001f && diffuse.b <= 0.001f) subMesh.material.diffuseColor = Mathmethod::Vec3(1.0f , 1.0f, 1.0f);
+			else subMesh.material.diffuseColor = Mathmethod::Vec3(diffuse.r, diffuse.g, diffuse.b);
+		}
+		if (material->Get(AI_MATKEY_COLOR_SPECULAR, specular)== AI_SUCCESS)
+		{
+			subMesh.material.specularColor = Mathmethod::Vec3(specular.r, specular.g, specular.b);
+		}
+		if(material->Get(AI_MATKEY_SHININESS, shininess)== AI_SUCCESS)
+		{
+			subMesh.material.Shininess = shininess;
+		}
+		if (material->Get(AI_MATKEY_SHININESS_STRENGTH,shininessStrength) == AI_SUCCESS)
+		{
+			subMesh.material.SpecularStrength = shininessStrength;
 		}
 	}
 	if (matIndex < g_materialTextures.size()) 
@@ -413,10 +436,39 @@ inline float toRadians(float degrees)
 {
 	return degrees * (PI / 180.0f);
 }
+void Shadercheck(int &vertexS,int &fragmentS,int &shaderP)
+{
+	GLint success;
+	char infoLog[1024];
+
+	glGetShaderiv(vertexS, GL_COMPILE_STATUS, &success);
+	if (!success)
+	{
+		glGetShaderInfoLog(vertexS, 1024, nullptr, infoLog);
+		std::cout << "VERTEX ERROR:\n"
+			<< infoLog << '\n';
+	}
+
+	glGetShaderiv(fragmentS, GL_COMPILE_STATUS, &success);
+	if (!success)
+	{
+		glGetShaderInfoLog(fragmentS, 1024, nullptr, infoLog);
+		std::cout << "FRAGMENT ERROR:\n"
+			<< infoLog << '\n';
+	}
+
+	glGetProgramiv(shaderP, GL_LINK_STATUS, &success);
+	if (!success)
+	{
+		glGetProgramInfoLog(shaderP, 1024, nullptr, infoLog);
+		std::cout << "PROGRAM LINK ERROR:\n"
+			<< infoLog << '\n';
+	}
+}
 int main()
 {
 	glfwInit();
-	GLFWwindow* window = glfwCreateWindow(1280, 720, "Yuchan", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(1920, 1080, "Yuchan", NULL, NULL);
 	glfwMakeContextCurrent(window); 
 	gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 	glfwSetScrollCallback(window, Scroll_callback);
@@ -430,8 +482,50 @@ int main()
 	glCompileShader(fragmentS);
 	glAttachShader(shaderP, fragmentS);
 	glLinkProgram(shaderP);
-	glDeleteProgram(vertexS); 	glDeleteProgram(fragmentS);
+	glDeleteShader(vertexS); 	glDeleteShader(fragmentS);
+	glEnable(GL_DEPTH_TEST);
 	IMGUI_CHECKVERSION();
+	unsigned int depthMapFBO = 0;
+	glGenFramebuffers(1, &depthMapFBO);
+	const unsigned int Shadow_Width = 1024, Shadow_Height = 1024;
+	unsigned int depthMap;
+	glGenTextures(1, &depthMap);
+	glBindTexture(GL_TEXTURE_2D, depthMap);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, Shadow_Width, Shadow_Height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	int LightShaderVertex = glCreateShader(GL_VERTEX_SHADER);
+	int LightShaderFragment = glCreateShader(GL_FRAGMENT_SHADER);
+	int LightShaderP = glCreateProgram();
+	glShaderSource(LightShaderVertex, 1, &LightvertexShaderSource, NULL);
+	glCompileShader(LightShaderVertex);
+	glAttachShader(LightShaderP, LightShaderVertex);
+	glShaderSource(LightShaderFragment, 1, &LightfragmentShaderSource, NULL);
+	glCompileShader(LightShaderFragment);
+	glAttachShader(LightShaderP, LightShaderFragment);
+	glLinkProgram(LightShaderP);
+	glDeleteShader(LightShaderVertex);  glDeleteShader(LightShaderFragment);
+	Mathmethod::Vec3 lightDir;
+	float elepi = toRadians(Elevation);
+	float azipi = toRadians(Azimuth);
+	lightDir.x = cos(elepi) * sin(azipi);
+	lightDir.y = -sin(elepi);
+	lightDir.z = cos(elepi) * cos(azipi);
+	lightDir = lightDir.Normalize();
+	Mathmethod::Mat4 lightProjection = lightProjection.OrthoGraphic(-200.0f, 200.0f, -200.0f, 200.0f, 0.1f, 500.0f);
+	Mathmethod::Mat4 lightView = lightView.Lookat(lightDir.Normalize() * -20.f, Mathmethod::Vec3(0.0,0.0,0.0), CameraUp);
+	Mathmethod::Mat4 lightSpace = lightProjection * lightView;
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
 	io.FontGlobalScale = 1.5f;
@@ -442,42 +536,61 @@ int main()
 		"Fonts/NotoSansKR-VariableFont_wght.ttf",
 		18.0f);
 	io.FontDefault = font;
-	glEnable(GL_DEPTH_TEST);
-	loadModelAssimp("sibenik.obj");
+	loadModelAssimp("fireplace_room.obj");
+	//Shadercheck(vertexS, fragmentS, shaderP);
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents();
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
-		glViewport(0, 0, 1280, 720);
-		glClearColor(BackgroundColor[0],BackgroundColor[1],BackgroundColor[2],BackgroundColor[3]); glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glUseProgram(shaderP);
-		glUniform1f(glGetUniformLocation(shaderP, "ele"),Elevation);
-		glUniform1f(glGetUniformLocation(shaderP, "azi"), Azimuth);
-		glUniform3f(glGetUniformLocation(shaderP, "viewPos"), CameraEye.x, CameraEye.y, CameraEye.z);
-		glUniform3fv(glGetUniformLocation(shaderP, "lightColor"), 1, lightColor);
-		glUniform3f(glGetUniformLocation(shaderP, "objectColor"), 1.0f, 1.0f, 1.0f);
-		Mathmethod::Mat4 view = view.Lookat(CameraEye, CameraEye + CameraTarget, CameraUp);
-		Mathmethod::Mat4 projection = projection.Perspective(toRadians(fov), (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 1000.0f);
 		Mathmethod::Mat4 RotateX = RotateX.Rotate(toRadians(rotationX), Mathmethod::Vec3(0.0f, -1.0f, 0.0f));
 		Mathmethod::Mat4 RotateY = RotateY.Rotate(toRadians(rotationY), Mathmethod::Vec3(1.0f, 0.0f, 0.0f));
 		Mathmethod::Mat4 model = RotateX * RotateY;
-		Mathmethod::Mat3 normalMatrix = model.toMat3().Inverse().Transpose();
+		glUseProgram(LightShaderP);
+		glViewport(0, 0, Shadow_Width, Shadow_Height);
+		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+		glClear(GL_DEPTH_BUFFER_BIT);
+		glUniformMatrix4fv(glGetUniformLocation(LightShaderP, "lightSpace"), 1, GL_FALSE, &lightSpace.col[0].x);
+		glUniformMatrix4fv(glGetUniformLocation(LightShaderP, "model"), 1, GL_FALSE, &model.col[0].x);
+		for (const auto& mesh : g_meshes)
+		{
+			glBindVertexArray(mesh.VAO);
+			glDrawArrays(GL_TRIANGLES, 0, mesh.vertexCount);
+			glBindVertexArray(0);
+		}
+		glUseProgram(shaderP);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0); 
+		glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT); 
+		glClearColor(BackgroundColor[0], BackgroundColor[1], BackgroundColor[2], BackgroundColor[3]);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		Mathmethod::Mat4 view = view.Lookat(CameraEye, CameraEye + CameraTarget, CameraUp);
+		Mathmethod::Mat4 projection = projection.Perspective(toRadians(fov), (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 1000.0f);
+		Mathmethod::Mat3 normalMatrix = model.toMat3().Inverse().Transpose(); 
 		glUniformMatrix4fv(glGetUniformLocation(shaderP, "model"), 1, GL_FALSE, &model.col[0].x);
 		glUniformMatrix4fv(glGetUniformLocation(shaderP, "view"), 1, GL_FALSE, &view.col[0].x);
 		glUniformMatrix4fv(glGetUniformLocation(shaderP, "projection"), 1, GL_FALSE, &projection.col[0].x);
 		glUniformMatrix3fv(glGetUniformLocation(shaderP, "normalMatrix"), 1, GL_FALSE, &normalMatrix.col[0].x);
+		glUniformMatrix4fv(glGetUniformLocation(shaderP, "lightSpace"), 1, GL_FALSE, &lightSpace.col[0].x);
 		glUniform1i(glGetUniformLocation(shaderP, "texture_diffuse"), 0);
-		UIset(window,lightColor, Elevation, Azimuth, BackgroundColor,view);
+		glUniform3f(glGetUniformLocation(shaderP, "viewPos"), CameraEye.x, CameraEye.y, CameraEye.z);
+		glUniform3fv(glGetUniformLocation(shaderP, "lightColor"), 1, lightColor);
+		glUniform3f(glGetUniformLocation(shaderP, "lightDir"), lightDir.x, lightDir.y, lightDir.z);
+		UIset(window, lightColor, Elevation, Azimuth, BackgroundColor, view);
 		for (const auto& mesh : g_meshes)
 		{
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, mesh.textureID);
-			glUniform3f(glGetUniformLocation(shaderP, "meshColor"),
-				mesh.diffuseColor.x, mesh.diffuseColor.y, mesh.diffuseColor.z);
+			glUniform3f(glGetUniformLocation(shaderP, "material.diffuseColor"), mesh.material.diffuseColor.x, mesh.material.diffuseColor.y, mesh.material.diffuseColor.z);
+			glUniform3f(glGetUniformLocation(shaderP, "material.specularColor"), mesh.material.specularColor.x, mesh.material.specularColor.y, mesh.material.specularColor.z);
+			glUniform1f(glGetUniformLocation(shaderP, "material.shininess"), mesh.material.Shininess);
+			glUniform1f(glGetUniformLocation(shaderP, "material.specularStrength"), mesh.material.SpecularStrength);
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, depthMap); 
+			glUniform1i(glGetUniformLocation(shaderP, "shadowMap"), 1);
 			glBindVertexArray(mesh.VAO);
 			glDrawArrays(GL_TRIANGLES, 0, mesh.vertexCount);
+			glBindVertexArray(0);
 		}
 		KeyboardInput(window);
 		MouseRotate(window);

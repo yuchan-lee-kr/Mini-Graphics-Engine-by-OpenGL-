@@ -546,6 +546,15 @@ namespace Mmt
 				result.col[3] = Vec4(-xAxis.Dot(eye), -yAxis.Dot(eye), -zAxis.Dot(eye), 1.0f);
 				return result;
 			}
+			Mat4 OrthoGraphic(float left, float right, float bottom, float top, float zNear, float zFar)
+			{
+				Mat4 result;
+				result.col[0] = Vec4(2 / (right - left), 0, 0, 0);
+				result.col[1] = Vec4(0, 2 / (top - bottom), 0, 0);
+				result.col[2] = Vec4(0, 0, -2 / (zFar - zNear), 0);
+				result.col[3] = Vec4((-right - left) / (right - left), (-top - bottom) / (top - bottom), (-zFar - zNear) / (zFar - zNear), 1);
+				return result;
+			}
 			Mat3 toMat3()
 			{
 				Mat3 result;
