@@ -517,12 +517,6 @@ int main()
 	glLinkProgram(LightShaderP);
 	glDeleteShader(LightShaderVertex);  glDeleteShader(LightShaderFragment);
 	Mathmethod::Vec3 lightDir;
-	float elepi = toRadians(Elevation);
-	float azipi = toRadians(Azimuth);
-	lightDir.x = cos(elepi) * sin(azipi);
-	lightDir.y = -sin(elepi);
-	lightDir.z = cos(elepi) * cos(azipi);
-	lightDir = lightDir.Normalize();
 	Mathmethod::Mat4 lightProjection = lightProjection.OrthoGraphic(-200.0f, 200.0f, -200.0f, 200.0f, 0.1f, 500.0f);
 	Mathmethod::Mat4 lightView = lightView.Lookat(lightDir.Normalize() * -20.f, Mathmethod::Vec3(0.0,0.0,0.0), CameraUp);
 	Mathmethod::Mat4 lightSpace = lightProjection * lightView;
@@ -536,7 +530,7 @@ int main()
 		"Fonts/NotoSansKR-VariableFont_wght.ttf",
 		18.0f);
 	io.FontDefault = font;
-	loadModelAssimp("fireplace_room.obj");
+	loadModelAssimp("sibenik.obj");
 	//Shadercheck(vertexS, fragmentS, shaderP);
 	while (!glfwWindowShouldClose(window))
 	{
@@ -567,6 +561,12 @@ int main()
 		Mathmethod::Mat4 view = view.Lookat(CameraEye, CameraEye + CameraTarget, CameraUp);
 		Mathmethod::Mat4 projection = projection.Perspective(toRadians(fov), (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 1000.0f);
 		Mathmethod::Mat3 normalMatrix = model.toMat3().Inverse().Transpose(); 
+		float elepi = toRadians(Elevation);
+		float azipi = toRadians(Azimuth);
+		lightDir.x = cos(elepi) * sin(azipi);
+		lightDir.y = -sin(elepi);
+		lightDir.z = cos(elepi) * cos(azipi);
+		lightDir = lightDir.Normalize();
 		glUniformMatrix4fv(glGetUniformLocation(shaderP, "model"), 1, GL_FALSE, &model.col[0].x);
 		glUniformMatrix4fv(glGetUniformLocation(shaderP, "view"), 1, GL_FALSE, &view.col[0].x);
 		glUniformMatrix4fv(glGetUniformLocation(shaderP, "projection"), 1, GL_FALSE, &projection.col[0].x);

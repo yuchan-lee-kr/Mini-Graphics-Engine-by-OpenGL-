@@ -69,8 +69,6 @@ R"(
     void main()
     {
         vec3 norm = normalize(Normal);
-        //vec3 lightDir = normalize(vec3(cos(ele)*sin(azi),
-        //-sin(ele),cos(ele)*cos(azi)));
         vec3 TextColor = texture(texture_diffuse,TexCoords).rgb;
         if(length(TextColor) < 0.001f) {
         TextColor = vec3(1.0f,1.0f,1.0f);}
@@ -84,8 +82,7 @@ R"(
         float spec = pow(max(dot(norm,Halfvector),0.0),material.shininess);
         vec3 Specular = material.specularStrength * material.specularColor *spec * lightColor;
         float shadow = ShadowCalculation(FragPosLightSpace, norm, lightDir);
-        //vec3 result = Ambient + (1.0 - shadow) * (Diffuse + Specular);
-         vec3 result = Ambient + Diffuse + Specular;
+        vec3 result = Ambient + (1.0 - shadow) * (Diffuse + Specular);
         FragColor = vec4(result,1.0f); 
     }
 )";
