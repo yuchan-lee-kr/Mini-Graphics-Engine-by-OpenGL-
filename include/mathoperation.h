@@ -535,8 +535,7 @@ namespace Mmt
 			}
 			Mat4 Lookat(const Vec3& eye, const Vec3& target, const Vec3& up)
 			{
-				Vec3 zAxis = (eye - target);
-				zAxis.Normalize();
+				Vec3 zAxis = (eye - target).Normalize();
 				Vec3 xAxis = up.Cross(zAxis).Normalize();
 				Vec3 yAxis = zAxis.Cross(xAxis);
 				Mat4 result;

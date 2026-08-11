@@ -12,6 +12,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <cmath>
+#include <cfloat>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include <Shader.h> //Shader header
@@ -28,19 +29,21 @@ Mathmethod::Vec3 position;
 Mathmethod::Vec3 color;
 float scaleFactor = 0;
 
+Mathmethod::Vec3 SceneCenter;
+Mathmethod::Vec3 SceneSize;
+Mathmethod::Vec3 telePos;
 Mathmethod::Vec3 CameraEye = Mathmethod::Vec3(0.0f, 5.0f, 150.0f);
 Mathmethod::Vec3 CameraTarget = Mathmethod::Vec3(0.0f, 0.0f, -1.0f);
 Mathmethod::Vec3 CameraUp= Mathmethod::Vec3(0.0f, 1.0f, 0.0f);
-Mathmethod::Vec3 MaxVertex = Mathmethod::Vec3(0.0f, 0.0f, 0.0f);
-Mathmethod::Vec3 MinVertex = Mathmethod::Vec3(0.0f, 0.0f, 0.0f);
-Mathmethod::Vec3 telePos;
+Mathmethod::Vec3 MaxVertex = Mathmethod::Vec3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+Mathmethod::Vec3 MinVertex = Mathmethod::Vec3(FLT_MAX, FLT_MAX, FLT_MAX);
 
 float movespeed = 0.3f;
 float lightColor[3] = { 1.0f, 1.0f, 1.0f };
 float Elevation = 45.0f;
 float Azimuth = 30.0f;
 float BackgroundColor[4] = { 0.45f, 0.65f, 0.85f, 1.0f };
-bool isWalkMode = false;      // false: 자유 시점 / true: 1인칭 인간 시점
+bool isWalkMode = false;      
 float humanEyeHeight = 0;
 bool isDragging = false;
 bool Tapkeypressedlast = false;
@@ -48,7 +51,8 @@ double lastX = 0.0, lastY = 0.0;
 float rotationX = 0.0f;
 float rotationY = 0.0f;
 float rotationSpeed = 0.5f;
-float fov = 45.0f;
+float fov = 90.0f;
+float SceneRadius;
 int currentMode = 0;
 
 struct Material
@@ -69,13 +73,12 @@ struct SubMesh
 };
 vector<SubMesh> g_meshes;
 vector<unsigned int> g_materialTextures;
-
 void CameraModeChange(GLFWwindow* window,int newmode)
 {
 	currentMode = newmode;
 	if (currentMode == 1)
 	{
-		telePos = Mathmethod::Vec3((MinVertex.x + MaxVertex.x) / 2, MinVertex.y, -MinVertex.z);
+		telePos = Mathmethod::Vec3(SceneCenter.x, MinVertex.y + SceneRadius * 0.05f, SceneCenter.z);
 		CameraEye = telePos;
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	}
@@ -291,8 +294,17 @@ void ProcessMesh(aiMesh* mesh,const aiScene* scene)
 			}
 		}
 	}
-	MaxVertex = max;
-	MinVertex = min;
+	MinVertex.x = std::min(min.x, MinVertex.x);
+	MinVertex.y = std::min(min.y, MinVertex.y);
+	MinVertex.z = std::min(min.z, MinVertex.z);
+	MaxVertex.x = std::max(max.x, MaxVertex.x);
+	MaxVertex.y = std::max(max.y, MaxVertex.y);
+	MaxVertex.z = std::max(max.z, MaxVertex.z);
+	SceneCenter = (MinVertex + MaxVertex) * 0.5f;
+	SceneSize = MaxVertex - MinVertex;
+	SceneRadius = SceneSize.Length() * 0.5f;
+	CameraEye = SceneCenter + Mathmethod::Vec3(0.0f, SceneRadius * 0.15f, SceneRadius * 1.5f);
+	CameraTarget = (SceneCenter - CameraEye).Normalize();
 	SubMesh subMesh;
 	subMesh.vertexCount = vertexData.size() / 8;
 	glGenVertexArrays(1, &subMesh.VAO);
@@ -516,10 +528,6 @@ int main()
 	glAttachShader(LightShaderP, LightShaderFragment);
 	glLinkProgram(LightShaderP);
 	glDeleteShader(LightShaderVertex);  glDeleteShader(LightShaderFragment);
-	Mathmethod::Vec3 lightDir;
-	Mathmethod::Mat4 lightProjection = lightProjection.OrthoGraphic(-200.0f, 200.0f, -200.0f, 200.0f, 0.1f, 500.0f);
-	Mathmethod::Mat4 lightView = lightView.Lookat(lightDir.Normalize() * -20.f, Mathmethod::Vec3(0.0,0.0,0.0), CameraUp);
-	Mathmethod::Mat4 lightSpace = lightProjection * lightView;
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
 	io.FontGlobalScale = 1.5f;
@@ -531,6 +539,17 @@ int main()
 		18.0f);
 	io.FontDefault = font;
 	loadModelAssimp("sibenik.obj");
+	Mathmethod::Vec3 corners[8] =
+	{
+		Mathmethod::Vec3(MinVertex.x,MinVertex.y,MinVertex.z),
+		Mathmethod::Vec3(MaxVertex.x,MinVertex.y,MinVertex.z),
+		Mathmethod::Vec3(MinVertex.x,MaxVertex.y,MinVertex.z),
+		Mathmethod::Vec3(MaxVertex.x,MaxVertex.y,MinVertex.z),
+		Mathmethod::Vec3(MinVertex.x,MinVertex.y,MaxVertex.z),
+		Mathmethod::Vec3(MaxVertex.x,MinVertex.y,MaxVertex.z),
+		Mathmethod::Vec3(MinVertex.x,MaxVertex.y,MaxVertex.z),
+		Mathmethod::Vec3(MaxVertex.x,MaxVertex.y,MaxVertex.z),
+	};
 	//Shadercheck(vertexS, fragmentS, shaderP);
 	while (!glfwWindowShouldClose(window))
 	{
@@ -541,6 +560,46 @@ int main()
 		Mathmethod::Mat4 RotateX = RotateX.Rotate(toRadians(rotationX), Mathmethod::Vec3(0.0f, -1.0f, 0.0f));
 		Mathmethod::Mat4 RotateY = RotateY.Rotate(toRadians(rotationY), Mathmethod::Vec3(1.0f, 0.0f, 0.0f));
 		Mathmethod::Mat4 model = RotateX * RotateY;
+		Mathmethod::Vec3 lightDir;
+		float elepi = toRadians(Elevation);
+		float azipi = toRadians(Azimuth);
+		lightDir.x = cos(elepi) * sin(azipi);
+		lightDir.y = -sin(elepi);
+		lightDir.z = cos(elepi) * cos(azipi);
+		lightDir = lightDir.Normalize();
+		Mathmethod::Vec3 lightPos = SceneCenter - lightDir * (SceneRadius * 2.0f);
+		Mathmethod::Mat4 lightView = lightView.Lookat(lightPos, SceneCenter, Mathmethod::Vec3(0.0f, 1.0f, 0.0f));
+		float minX = FLT_MAX;
+		float maxX = -FLT_MAX;
+		float minY = FLT_MAX;
+		float maxY = -FLT_MAX;
+		float minZ = FLT_MAX;
+		float maxZ = -FLT_MAX;
+		for (int i = 0; i < 8; i++)
+		{
+			Mathmethod::Vec4 p = lightView * Mathmethod::Vec4(corners[i].x, corners[i].y, corners[i].z, 1.0f);
+			minX = std::min(minX, p.x);
+			maxX = std::max(maxX, p.x);
+			minY = std::min(minY, p.y);
+			maxY = std::max(maxY, p.y);
+			minZ = std::min(minZ, p.z);
+			maxZ = std::max(maxZ, p.z);
+		}
+		float width = maxX - minX;
+		float height = maxY - minY;
+		float padding = 0.1f;
+		minX -= width * padding;
+		maxX += width * padding;
+		minY -= height * padding;
+		maxY += height * padding;
+		float near = -maxZ;
+		float far = -minZ;
+		float depthRange = far - near;
+		float depthPadding = depthRange * 0.1f;
+		near = std::max(0.01f, near - depthPadding);
+		far += depthPadding;
+		Mathmethod::Mat4 lightProjection = lightProjection.OrthoGraphic(minX, maxX, minY, maxY, near, far);
+		Mathmethod::Mat4 lightSpace = lightProjection * lightView;
 		glUseProgram(LightShaderP);
 		glViewport(0, 0, Shadow_Width, Shadow_Height);
 		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
@@ -559,14 +618,8 @@ int main()
 		glClearColor(BackgroundColor[0], BackgroundColor[1], BackgroundColor[2], BackgroundColor[3]);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		Mathmethod::Mat4 view = view.Lookat(CameraEye, CameraEye + CameraTarget, CameraUp);
-		Mathmethod::Mat4 projection = projection.Perspective(toRadians(fov), (float)SCR_WIDTH / SCR_HEIGHT, 0.1f, 1000.0f);
+		Mathmethod::Mat4 projection = projection.Perspective(toRadians(fov), (float)SCR_WIDTH / SCR_HEIGHT, 0.1f,1000.0f);
 		Mathmethod::Mat3 normalMatrix = model.toMat3().Inverse().Transpose(); 
-		float elepi = toRadians(Elevation);
-		float azipi = toRadians(Azimuth);
-		lightDir.x = cos(elepi) * sin(azipi);
-		lightDir.y = -sin(elepi);
-		lightDir.z = cos(elepi) * cos(azipi);
-		lightDir = lightDir.Normalize();
 		glUniformMatrix4fv(glGetUniformLocation(shaderP, "model"), 1, GL_FALSE, &model.col[0].x);
 		glUniformMatrix4fv(glGetUniformLocation(shaderP, "view"), 1, GL_FALSE, &view.col[0].x);
 		glUniformMatrix4fv(glGetUniformLocation(shaderP, "projection"), 1, GL_FALSE, &projection.col[0].x);

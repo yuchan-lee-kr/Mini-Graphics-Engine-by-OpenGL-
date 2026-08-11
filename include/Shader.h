@@ -60,10 +60,19 @@ R"(
         projCoords = projCoords * 0.5 + 0.5;
         if(projCoords.z > 1.0)
             return 0.0;
-        float closestDepth = texture(shadowMap, projCoords.xy).r; 
         float currentDepth = projCoords.z;
         float bias = max(0.0005 * (1.0 - dot(normal, -lightDir)), 0.005);
-        float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+        float shadow = 0.0f;
+        vec2 texSize = 1.0f / textureSize(shadowMap,0);
+        for(int i = -1; i <= 1; i++)
+        {
+            for(int j = -1; j <= 1;j++)
+            {
+                float PCFDepth = texture(shadowMap,projCoords.xy + vec2(i,j) * texSize).r;
+                shadow += currentDepth - bias > PCFDepth ? 1.0 : 0.0;
+            }
+        }
+        shadow /= 9.0;
         return shadow;
     }
     void main()
@@ -73,7 +82,7 @@ R"(
         if(length(TextColor) < 0.001f) {
         TextColor = vec3(1.0f,1.0f,1.0f);}
         vec3 albedo = TextColor * material.diffuseColor;
-        float AmbientStrength = 0.4f;
+        float AmbientStrength = 0.3f;
         vec3 Ambient = AmbientStrength * lightColor * albedo;
         float diff = max(dot(norm,-lightDir),0.0);
         vec3 Diffuse = diff * lightColor * albedo;
@@ -83,7 +92,7 @@ R"(
         vec3 Specular = material.specularStrength * material.specularColor *spec * lightColor;
         float shadow = ShadowCalculation(FragPosLightSpace, norm, lightDir);
         vec3 result = Ambient + (1.0 - shadow) * (Diffuse + Specular);
-        FragColor = vec4(result,1.0f); 
+        FragColor = vec4(result ,1.0f); 
     }
 )";
 const char* LightvertexShaderSource =
