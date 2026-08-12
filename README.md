@@ -11,6 +11,8 @@ C++17과 OpenGL을 활용하여 밑바닥부터(From Scratch) 수학 및 렌더�
 * **조명 시스템:** Directional Light와 Shadow Mapping을 활용한 렌더링 파이프라인 구축
 * **제한적 환경:** Windows 환경 중심 (Cross-platform 및 복잡한 Material System 미구현)
 
+![Alt Text](/demo.gif)
+
 ##  개요
 처음 OpenGL을 공부하면서 화면에 보이는 결과가 내부에서 어떤 과정을 거쳐 만들어지는지를 직접 확인해보고 싶었습니다.
 그래서 가능한 부분은 직접 구현하고,
