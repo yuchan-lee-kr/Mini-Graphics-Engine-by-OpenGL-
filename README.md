@@ -1,31 +1,43 @@
-# Mini Graphics Engine (OpenGL)
+<p align="right">
+  <a href="./README.md">English</a> | 한국어 | <a href="./README.ja.md">日本語</a>
+</p>
 
-C++17과 OpenGL을 활용하여 밑바닥부터(From Scratch) 수학 및 렌더링 파이프라인을 구축한 학습용 실시간 렌더러입니다.
-본 프로젝트의 목표는 상용 엔진(Unity, Unreal Engine 등) 수준의 범용성을 갖춘 툴을 만드는 것이 아닙니다.
+<h1 align="center">Mini Graphics Engine</h1>
 
-**3D 그래픽스 이면의 수학적 원리와 렌더링 파이프라인의 구조를 직접 설계하며 깊이 있게 이해하는 것**에 초점을 맞추고 있습니다.
+<p align="center">
+  <b>A real-time OpenGL renderer built to understand graphics math and rendering pipelines from scratch.</b>
+</p>
 
-엔진의 부가적인 기능 확장보다는, 렌더링 코어 기술과 그래픽스 수학의 구현에 집중하기 위해 다음과 같이 개발 범위를 제한했습니다.
-* **수학 라이브러리 직접 구현:** 범용 라이브러리(GLM 등)에 의존하지 않고 행렬 변환과 벡터 연산 등 선형대수학 로직을 직접 구현
-* **단일 모델 및 렌더링 코어 집중:** 복잡한 씬(Scene) 관리 로직 대신, 하나의 모델에 대한 조명, 그림자, 재질 등 그래픽 퀄리티 향상에 집중
-* **조명 시스템:** Directional Light와 Shadow Mapping을 활용한 렌더링 파이프라인 구축
-* **제한적 환경:** Windows 환경 중심 (Cross-platform 및 복잡한 Material System 미구현)
+<p align="center">
+  <img src="images/main_preview.png" width="850">
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/C++-17-blue">
+  <img src="https://img.shields.io/badge/OpenGL-Renderer-green">
+  <img src="https://img.shields.io/badge/GLSL-Shaders-purple">
+  <img src="https://img.shields.io/badge/Dear%20ImGui-Editor-orange">
+</p>
+
+C++17과 OpenGL을 사용해 렌더링 파이프라인의 핵심 요소를 직접 구현한 학습용 실시간 3D 렌더러입니다.
+이 프로젝트는 범용 게임 엔진보다 **렌더링 코어의 직접 구현**에 초점을 맞추었습니다. 따라서 복잡한 Scene Editor나 다중 플랫폼 지원보다는, 그래픽스 수학과 렌더링 파이프라인을 직접 구현하는 데 개발 범위를 집중했습니다.
 
 ![Alt Text](/demo.gif)
 
-##  개요
+## ✨개요
 처음 OpenGL을 공부하면서 화면에 보이는 결과가 내부에서 어떤 과정을 거쳐 만들어지는지를 직접 확인해보고 싶었습니다.
 그래서 가능한 부분은 직접 구현하고,
 그래픽스 학습과 직접적인 관련이 적은 부분은 외부 라이브러리를 사용했습니다.
 
-이 프로젝트에서 제게 스스로 던진 질문들입니다.
+이 프로젝트는 다음 질문을 직접 구현을 통해 확인하는 것을 목표로 했습니다.
 
-* **공간 변환 (Space Transformation):** 3D 공간의 정점(Vertex)은 MVP (Model-View-Projection) 행렬을 통해 어떤 선형 변환을 거쳐 2D 화면으로 투영되는가?
-* **조명 방정식 (Lighting Equation):** Light Vector와 Surface Normal의 내적(Dot Product)을 활용해 물리적인 빛의 반사(Phong Shading)를 어떻게 수식화하는가?
-* **그림자 렌더링 (Shadow Mapping):** 그림자를 판별하기 위해 월드 좌표계를 빛의 시점(Light Space)으로 변환하는 이유는 무엇이며, 깊이 맵(Depth Map)은 어떻게 작동하는가?
+- 3D 공간의 정점은 MVP 행렬을 거쳐 어떻게 2D 화면 좌표로 변환되는가?
+- Surface Normal과 Light Direction의 내적은 조명 계산에서 어떤 의미를 가지는가?
+- Shadow Mapping에서 왜 월드 좌표를 Light Space로 변환해야 하는가?
+- Normal Map의 tangent-space normal은 어떻게 world-space normal로 변환되는가?
+- Gamma Correction은 조명 결과의 시각적 밝기에 어떤 영향을 주는가?
 
-
-## 기능
+## ⚙️ 기능
 현재 구현된 주요 기능입니다.
 
 
@@ -78,7 +90,25 @@ Dear ImGui를 이용한 간단한 Debug / Control Interface를 제공합니다.
 GUI는 완전한 Scene Editor보다는
 렌더링 결과를 확인하고 Parameter를 실시간으로 조절하기 위한 용도로 사용합니다.
 
-## 조작 방법 (Controls)
+## ⚠️한계
+
+이 프로젝트는 렌더링 파이프라인과 그래픽스 수학의 직접 구현에 초점을 둔 학습용 렌더러입니다. 따라서 다음과 같은 제한이 있습니다.
+
+- 현재 조명 모델은 Blinn-Phong 기반이며 PBR 파이프라인은 구현하지 않았습니다.
+- Directional Light 하나를 중심으로 렌더링하며, Point Light / Spot Light 및 Cubemap Shadow는 구현하지 않았습니다.
+- 실내 장면은 Global Illumination이나 IBL이 없기 때문에 간접광 표현이 제한적이며, Ambient Term으로 근사합니다.
+- 단일 imported scene/model을 대상으로 하며, 복수 모델에 대한 Scene Graph와 per-object transform은 구현 범위에서 제외했습니다.
+- Normal Map은 material에 연결된 경우 또는 파일명 규칙에 따라 로드하며, asset 품질에 따라 결과가 달라질 수 있습니다.
+
+ ## 🚧향후 개선 방향
+
+- Point Light / Spot Light
+- Cubemap Shadow Mapping for Point Lights
+- HDR Rendering and Tone Mapping
+- Physically Based Rendering (PBR)
+- SSAO
+
+## 🎮조작 방법 
 
 3D 공간을 자유롭게 탐색할 수 있도록 Free-fly 카메라 조작을 지원합니다.
 
@@ -87,15 +117,7 @@ GUI는 완전한 Scene Editor보다는
 * **`Mouse Drag`**: 마우스을 통한 카메라 회전
 * **`UI 패널`**: 화면 내 ImGui 윈도우를 통해 렌더링 파라미터 실시간 조절
 
-## Planed
-
-다음 기능들을 우선적으로 구현할 계획입니다.
-
-- Normal Mapping
-- Camera Improvements
-- Material / Lighting Controls
-
-## Tech Stack
+## 🧱 기술 스택
 
 ### Core
 
@@ -103,7 +125,7 @@ GUI는 완전한 Scene Editor보다는
 - OpenGL
 - GLSL
 
-### Libraries
+### 라이브러리
 
 윈도우 생성 및 에셋 로딩을 위해 다음 라이브러리들을 활용했습니다.
 - GLFW
@@ -112,7 +134,7 @@ GUI는 완전한 Scene Editor보다는
 - stb_image
 - Dear ImGui
 
-### Development
+### 개발 툴
 
 - Visual Studio Community
 - Windows
