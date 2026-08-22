@@ -1,5 +1,5 @@
 <p align="right">
-  English | <a href="./README.ko.md">한국어</a> | <a href="./README.ja.md">日本語</a>
+  English | <a href="./README.md">한국어</a> | <a href="./README_JA.md">日本語</a>
 </p>
 
 <h1 align="center">Mini Graphics Engine</h1>
