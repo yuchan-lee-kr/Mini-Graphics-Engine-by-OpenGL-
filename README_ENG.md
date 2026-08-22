@@ -1,48 +1,70 @@
-# Mini Graphics Engine (OpenGL)
+<p align="right">
+  English | <a href="./README.ko.md">한국어</a> | <a href="./README.ja.md">日本語</a>
+</p>
 
-This is an educational real-time renderer built from scratch using C++17 and OpenGL, constructing the mathematics and rendering pipelines from the ground up.
+<h1 align="center">Mini Graphics Engine</h1>
 
-The goal of this project is not to create a versatile tool on the level of commercial engines (like Unity or Unreal Engine). Instead, it focuses on **deeply understanding the mathematical principles behind 3D graphics and designing the structure of the rendering pipeline directly**.
+<p align="center">
+  <b>A real-time OpenGL renderer built to understand graphics math and rendering pipelines from scratch.</b>
+</p>
 
-To concentrate on rendering core technologies and the implementation of graphics mathematics rather than expanding auxiliary engine features, the development scope is restricted as follows:
+<p align="center">
+  <img src="images/main_preview.png" width="850">
+</p>
 
-* **Custom Math Library Implementation:** Directly implementing linear algebra logic, such as matrix transformations and vector operations, without relying on general-purpose libraries (like GLM).
-* **Focus on Single Model & Rendering Core:** Prioritizing the improvement of graphics quality—such as lighting, shadows, and materials for a single model—rather than complex scene management logic.
-* **Lighting System:** Building a rendering pipeline utilizing Directional Light and Shadow Mapping.
-* **Restricted Environment:** Windows-centric development (Cross-platform support and complex material systems are not implemented).
+<p align="center">
+  <img src="https://img.shields.io/badge/C++-17-blue">
+  <img src="https://img.shields.io/badge/OpenGL-Renderer-green">
+  <img src="https://img.shields.io/badge/GLSL-Shaders-purple">
+  <img src="https://img.shields.io/badge/Dear%20ImGui-Editor-orange">
+</p>
 
-## Overview
+This is a learning-oriented real-time 3D renderer built with C++17 and OpenGL.
 
-While initially studying OpenGL, I wanted to see firsthand the internal processes that create the results visible on the screen. Therefore, I implemented as much as possible from scratch and used external libraries only for parts less directly related to learning graphics.
+The goal of this project is not to build a general-purpose game engine like Unity or Unreal Engine. Instead, it focuses on directly implementing the core parts of a rendering pipeline, including graphics math, lighting, shadows, texture mapping, normal mapping, and runtime rendering controls.
 
-Here are the core questions I asked myself during this project:
+![Demo](/demo.gif)
 
-* **Space Transformation:** Through what linear transformations do vertices in 3D space project onto a 2D screen using the MVP (Model-View-Projection) matrix?
-* **Lighting Equation:** How is the physical reflection of light (Phong Shading) formulated using the dot product of the Light Vector and the Surface Normal?
-* **Shadow Mapping:** Why is the world coordinate system transformed into Light Space to determine shadows, and how does a Depth Map work?
+## ✨ Overview
 
-## Features
+When I first started learning OpenGL, I wanted to understand how the final image on the screen is actually produced internally. For that reason, I implemented the core graphics-related parts myself and used external libraries only for areas less directly related to graphics learning, such as window creation and asset loading.
 
-These are the main features currently implemented.
+This project was built around the following questions:
+
+- How are 3D vertices transformed into 2D screen coordinates through MVP matrices?
+- What does the dot product between a surface normal and a light direction mean in lighting calculations?
+- Why does Shadow Mapping require transforming world-space positions into light space?
+- How is a tangent-space normal from a normal map transformed into world space?
+- How does Gamma Correction affect the perceived brightness of lighting results?
+
+## ⚙️ Features
 
 ### Rendering
 
 - 3D Model Rendering
-- Texture Mapping: 3D model and texture loading pipeline using Assimp and stb_image
+- Texture Mapping using Assimp and stb_image
 - Blinn-Phong Lighting
   - Ambient
   - Diffuse
   - Specular
-- Material Support (Ka, Kd, Diffuse Texture)
+- Material Support
+  - Ka / Kd
+  - Diffuse Texture
+  - Normal Map
 - Directional Light
-- Shadow Mapping: 2-Pass rendering pipeline utilizing FBO (Framebuffer Object)
+- Shadow Mapping using a 2-pass rendering pipeline with FBO
 - Shadow Bias
 - 3×3 Percentage-Closer Filtering (PCF)
 - Automatic Light-Space Fitting
+- Tangent-space Normal Mapping
+  - Tangent calculation
+  - TBN matrix
+  - Normal strength control
+- Gamma Correction
 
 ### Graphics Math
 
-To deeply understand the graphics pipeline, I implemented most of the necessary mathematical functions from scratch without using the GLM library.
+To better understand the graphics pipeline, I implemented a significant part of the required math functionality without relying on GLM.
 
 - Vector2 / Vector3 / Vector4
 - Matrix3 / Matrix4
@@ -54,41 +76,51 @@ To deeply understand the graphics pipeline, I implemented most of the necessary 
 
 ### Model & Material
 
-- Assimp-based 3D Model Loading
-- Mesh / Submesh Processing
+- 3D model loading with Assimp
+- Mesh / Submesh processing
 - Vertex Position / Normal / UV
-- Material and Texture Loading
+- Material and texture loading
 
 ### Interface
 
-Provides a simple Debug / Control Interface using Dear ImGui.
+A simple debug and control interface is provided using Dear ImGui.
 
 - Hierarchy
 - Inspector
 - Rendering Statistics
 - Camera Parameters
 - Lighting Controls
-  
-The GUI is intended for checking rendering results and adjusting parameters in real-time, rather than serving as a complete Scene Editor.
 
-## Controls
+The GUI is not intended to be a full scene editor. It is mainly used to inspect rendering results and adjust rendering parameters in real time.
 
-Supports Free-fly camera controls to freely explore the 3D space.
+## ⚠️ Limitations
 
-* **`W` / `A` / `S` / `D`**: Move camera Forward/Backward/Left/Right
-* **`↑` / `↓` (Arrow Keys)**: Move camera Up/Down (Vertical ascent/descent)
-* **`Mouse Drag`**: Camera rotation
-* **`UI Panel`**: Real-time adjustment of rendering parameters via on-screen ImGui windows
+This project is a learning-oriented renderer focused on directly implementing graphics math and the rendering pipeline. Therefore, it has the following limitations:
 
-## Planned
+- The current lighting model is based on Blinn-Phong shading, not a PBR pipeline.
+- The renderer mainly uses a single directional light. Point lights, spot lights, and cubemap shadows are not implemented.
+- Indoor scenes have limited indirect illumination because Global Illumination and IBL are not implemented. Ambient lighting is used as an approximation.
+- The renderer targets a single imported scene/model. Multi-model scene graphs and per-object transforms are outside the current scope.
+- Normal maps are loaded when connected to a material or detected through a filename convention. The final result may vary depending on asset quality.
 
-I plan to implement the following features next:
+## 🚧 Future Work
 
-- Normal Mapping
-- Camera Improvements
-- Material / Lighting Controls
+- Point Light / Spot Light
+- Cubemap Shadow Mapping for Point Lights
+- HDR Rendering and Tone Mapping
+- Physically Based Rendering (PBR)
+- SSAO
 
-## Tech Stack
+## 🎮 Controls
+
+The renderer supports free camera navigation in 3D space.
+
+- **`W` / `A` / `S` / `D`**: Move camera forward, left, backward, and right
+- **`↑` / `↓`**: Move camera vertically
+- **`Mouse Drag`**: Rotate camera
+- **`UI Panel`**: Adjust rendering parameters in real time through ImGui windows
+
+## 🧱 Tech Stack
 
 ### Core
 
@@ -98,16 +130,18 @@ I plan to implement the following features next:
 
 ### Libraries
 
-Used the following libraries for window creation and asset loading:
+The following libraries are used for window creation and asset loading:
+
 - GLFW
 - GLAD
 - Assimp
 - stb_image
 - Dear ImGui
 
-### Development
+### Development Tools
 
 - Visual Studio Community
 - Windows
 
-The project is currently being developed in a Windows environment. Because it does not aim to be a multi-platform project, cross-OS compatibility is not a priority.
+This project is currently developed on Windows.  
+Cross-platform compatibility is not a priority because the project is not intended to be a multi-platform engine.
