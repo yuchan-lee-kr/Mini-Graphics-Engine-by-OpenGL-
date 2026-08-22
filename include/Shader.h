@@ -6,9 +6,11 @@ R"(
     layout (location = 0) in vec3 aPos;
     layout (location = 1) in vec3 aNormal;
     layout (location = 2) in vec2 aTexCoords;
-       
+    layout (location = 3) in vec3 aTangent;   
+
     out vec3 Normal;
     out vec3 FragPos;
+    out vec3 Tangent;
     out vec2 TexCoords;
     out vec4 FragPosLightSpace;
 
@@ -23,6 +25,7 @@ R"(
         FragPos = vec3(model * vec4(aPos,1.0f));
         Normal = normalMatrix * aNormal;
         TexCoords = aTexCoords;
+        Tangent = normalMatrix * aTangent;
         FragPosLightSpace = lightSpace * vec4(FragPos,1.0);
         gl_Position = projection * view *  vec4(FragPos, 1.0);
     }
@@ -42,6 +45,7 @@ R"(
 
     in vec3 Normal;
     in vec3 FragPos;
+    in vec3 Tangent;
     in vec2 TexCoords;
     in vec4 FragPosLightSpace;
 
@@ -49,10 +53,13 @@ R"(
     uniform vec3 viewPos;
     uniform vec3 lightColor;
     uniform vec3 lightDir;
-    uniform float ele;
-    uniform float azi;
+    uniform float AmbientStrength;
+    uniform float NormalStrength;
+    uniform float ShadowStrength;
     uniform sampler2D texture_diffuse;
     uniform sampler2D shadowMap;
+    uniform sampler2D texture_normal;
+    uniform bool hasNormal;
 
     float ShadowCalculation(vec4 fragPosLightSpace,vec3 normal,vec3 lightDir)
     {
@@ -77,22 +84,33 @@ R"(
     }
     void main()
     {
+        vec3 finalNormal;
+        if(hasNormal){
+        vec3 T = normalize(Tangent);
         vec3 norm = normalize(Normal);
-        vec3 TextColor = texture(texture_diffuse,TexCoords).rgb;
+        T = normalize(T - dot(T,norm)* norm);
+        vec3 B = normalize(cross(T,norm));
+        mat3 TBN = mat3(T,B,norm); 
+        vec3 tangentNormal = texture(texture_normal,TexCoords).rgb * 2.0 - 1.0;
+         tangentNormal.xy *= NormalStrength;
+         finalNormal = normalize(TBN * tangentNormal);
+        }
+        else finalNormal= normalize(Normal);
+        vec3 TextColor = pow(texture(texture_diffuse,TexCoords).rgb,vec3(2.2));
         if(length(TextColor) < 0.001f) {
         TextColor = vec3(1.0f,1.0f,1.0f);}
         vec3 albedo = TextColor * material.diffuseColor;
-        float AmbientStrength = 0.3f;
         vec3 Ambient = AmbientStrength * lightColor * albedo;
-        float diff = max(dot(norm,-lightDir),0.0);
+        float diff = max(dot(finalNormal,-lightDir),0.0);
         vec3 Diffuse = diff * lightColor * albedo;
         vec3 CameraDir = normalize(viewPos - FragPos);
         vec3 Halfvector = normalize(CameraDir+(-lightDir));
-        float spec = pow(max(dot(norm,Halfvector),0.0),material.shininess);
+        float spec = pow(max(dot(finalNormal,Halfvector),0.0),material.shininess);
         vec3 Specular = material.specularStrength * material.specularColor *spec * lightColor;
-        float shadow = ShadowCalculation(FragPosLightSpace, norm, lightDir);
-        vec3 result = Ambient + (1.0 - shadow) * (Diffuse + Specular);
-        FragColor = vec4(result ,1.0f); 
+        float shadow = ShadowCalculation(FragPosLightSpace, finalNormal, lightDir);
+        float lastshadow = shadow * ShadowStrength;
+        vec3 result = Ambient + (1.0 - lastshadow) * (Diffuse + Specular);
+        FragColor = vec4(pow(result ,vec3(1.0 / 2.2)),1.0); 
     }
 )";
 const char* LightvertexShaderSource =
