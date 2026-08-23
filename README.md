@@ -55,7 +55,12 @@ C++17과 OpenGL을 사용해 렌더링 파이프라인의 핵심 요소를 직�
 - Shadow Bias
 - 3×3 Percentage-Closer Filtering (PCF)
 - Automatic Light-Space Fitting
-
+- Tangent-space Normal Mapping
+  - Tangent calculation
+  - TBN matrix
+  - Normal strength control
+- Gamma Correction
+  
 ### Graphics Math
 
 그래픽스 파이프라인을 이해하기 위해 glm라이브러리를 사용하지 않고 필요한 수학 기능의 상당 부분을 직접 구현했습니다.
