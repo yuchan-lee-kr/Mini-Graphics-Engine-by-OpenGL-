@@ -29,6 +29,7 @@
 *.la
 *.a
 *.lib
+!lib/glfw3.lib
 
 # Executables
 *.exe

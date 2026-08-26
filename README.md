@@ -104,6 +104,7 @@ GUI는 완전한 Scene Editor보다는
 - 실내 장면은 Global Illumination이나 IBL이 없기 때문에 간접광 표현이 제한적이며, Ambient Term으로 근사합니다.
 - 단일 imported scene/model을 대상으로 하며, 복수 모델에 대한 Scene Graph와 per-object transform은 구현 범위에서 제외했습니다.
 - Normal Map은 material에 연결된 경우 또는 파일명 규칙에 따라 로드하며, asset 품질에 따라 결과가 달라질 수 있습니다.
+- Assimp 3.0.0 구형 버전이므로 최신 obj에 연동되지 않을 가능성이 있습니다.
 
  ## 🚧향후 개선 방향
 
@@ -147,8 +148,8 @@ GUI는 완전한 Scene Editor보다는
 ### 테스트 모델 
 Morgan McGuire, Computer Graphics Archive, July 2017 (https://casual-effects.com/data)
 
+##
 
 현재는 Windows 환경에서 개발하고 있습니다.
-
 다중 플랫폼을 목표로 하는 프로젝트는 아니기 때문에
 다른 운영체제에 대한 호환성은 우선순위에 두고 있지 않습니다.

@@ -104,6 +104,7 @@ GUI は完全な Scene Editor を目指したものではなく、レンダリ�
 - 室内シーンでは Global Illumination や IBL がないため、間接光の表現には限界があり、Ambient Term で近似しています。
 - 単一の imported scene/model を対象としており、複数モデルの Scene Graph や per-object transform は実装範囲外です。
 - Normal Map は material に接続されている場合、またはファイル名規則によって検出された場合に読み込まれます。結果はアセットの品質に依存します。
+-モデルのエクスポーター間の互換性の違いにより、サードパーティ製のOBJアセットの一部では再エクスポートが必要になる場合があります（例：MeshLabまたはBlender経由）。
 
 ## 🚧 Future Work
 
@@ -148,5 +149,6 @@ GUI は完全な Scene Editor を目指したものではなく、レンダリ�
 ### Test Model
 Morgan McGuire, Computer Graphics Archive, July 2017 (https://casual-effects.com/data)
 
+##
 現在は Windows 環境で開発しています。  
 マルチプラットフォームを目的としたプロジェクトではないため、他の OS への互換性は優先していません。

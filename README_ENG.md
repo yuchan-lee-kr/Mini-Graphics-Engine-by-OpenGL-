@@ -102,6 +102,7 @@ This project is a learning-oriented renderer focused on directly implementing gr
 - Indoor scenes have limited indirect illumination because Global Illumination and IBL are not implemented. Ambient lighting is used as an approximation.
 - The renderer targets a single imported scene/model. Multi-model scene graphs and per-object transforms are outside the current scope.
 - Normal maps are loaded when connected to a material or detected through a filename convention. The final result may vary depending on asset quality.
+-Some third-party OBJ assets may require re-exporting (e.g., via MeshLab or Blender) due to compatibility differences in model exporters.
 
 ## 🚧 Future Work
 
@@ -144,7 +145,8 @@ The following libraries are used for window creation and asset loading:
 - Windows
 
 ### Test Model
-Morgan McGuire, Computer Graphics Archive, July 2017 (https://casual-effects.com/data)
 
+##
+Morgan McGuire, Computer Graphics Archive, July 2017 (https://casual-effects.com/data)
 This project is currently developed on Windows.  
 Cross-platform compatibility is not a priority because the project is not intended to be a multi-platform engine.
