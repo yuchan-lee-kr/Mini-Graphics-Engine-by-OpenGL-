@@ -144,6 +144,10 @@ GUI는 완전한 Scene Editor보다는
 - Visual Studio Community
 - Windows
 
+### 테스트 모델 
+Morgan McGuire, Computer Graphics Archive, July 2017 (https://casual-effects.com/data)
+
+
 현재는 Windows 환경에서 개발하고 있습니다.
 
 다중 플랫폼을 목표로 하는 프로젝트는 아니기 때문에

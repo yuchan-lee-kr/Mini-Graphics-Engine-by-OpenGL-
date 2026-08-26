@@ -145,5 +145,8 @@ GUI は完全な Scene Editor を目指したものではなく、レンダリ�
 - Visual Studio Community
 - Windows
 
+### Test Model
+Morgan McGuire, Computer Graphics Archive, July 2017 (https://casual-effects.com/data)
+
 現在は Windows 環境で開発しています。  
 マルチプラットフォームを目的としたプロジェクトではないため、他の OS への互換性は優先していません。

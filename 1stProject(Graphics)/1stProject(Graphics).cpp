@@ -248,6 +248,8 @@ int loadTexture(char const* path)
 void ProcessMaterials(const aiScene* scene, const string& modelPath )
 {
 	g_materialTextures.clear();
+	g_materialNormalTextures.clear();
+	g_materialHasNormalMap.clear();
 	string directory;
 	size_t lastSlash = modelPath.find_last_of("/\\");
 	if (lastSlash != string::npos) {
@@ -280,7 +282,7 @@ void ProcessMaterials(const aiScene* scene, const string& modelPath )
 			else {
 				texturePath = rawFileName;
 			}
-			texID = loadTexture(texturePath.c_str());
+			if(material->GetTextureCount(aiTextureType_DIFFUSE) > 0) texID = loadTexture(texturePath.c_str());
 			cout << "material " << i << " texture linked: " << texturePath << std::endl;
 			string NormalFileName;
 			size_t dot = rawFileName.find_last_of('.');
@@ -417,6 +419,8 @@ void ProcessMesh(aiMesh* mesh,const aiScene* scene)
 	if (matIndex >= 0)
 	{
 		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+		cout << mesh->mMaterialIndex << endl;
+		cout << scene->mNumMaterials << endl;
 		aiColor3D ambient(0.8f, 0.8f, 0.8f);
 		aiColor3D diffuse(1.0f, 1.0f, 1.0f);
 		aiColor3D specular(0.2f, 0.2f, 0.2f);
@@ -444,15 +448,9 @@ void ProcessMesh(aiMesh* mesh,const aiScene* scene)
 			subMesh.material.SpecularStrength = shininessStrength;
 		}
 	}
-	if (matIndex < g_materialTextures.size()) 
-	{
-		subMesh.textureID = g_materialTextures[matIndex];
-		subMesh.normalmapID = g_materialNormalTextures[matIndex];
-		subMesh.hasNormalmap = g_materialHasNormalMap[matIndex];
-	}
-	else {
-		subMesh.textureID = 0;
-	}
+	if (matIndex < g_materialTextures.size()) subMesh.textureID = g_materialTextures[matIndex];
+	if (matIndex < g_materialNormalTextures.size()) subMesh.normalmapID = g_materialNormalTextures[matIndex];
+	if (matIndex < g_materialHasNormalMap.size()) subMesh.hasNormalmap = g_materialHasNormalMap[matIndex];
 	glBindVertexArray(0);
 	g_meshes.push_back(subMesh);
 }
@@ -671,7 +669,7 @@ int main()
 		"Fonts/NotoSansKR-VariableFont_wght.ttf",
 		18.0f);
 	io.FontDefault = font;
-	loadModelAssimp("sibenik.obj");
+	loadModelAssimp("bmw2.obj");
 	Mathmethod::Vec3 corners[8] =
 	{
 		Mathmethod::Vec3(MinVertex.x,MinVertex.y,MinVertex.z),

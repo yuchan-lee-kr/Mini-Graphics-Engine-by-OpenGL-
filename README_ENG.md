@@ -143,5 +143,8 @@ The following libraries are used for window creation and asset loading:
 - Visual Studio Community
 - Windows
 
+### Test Model
+Morgan McGuire, Computer Graphics Archive, July 2017 (https://casual-effects.com/data)
+
 This project is currently developed on Windows.  
 Cross-platform compatibility is not a priority because the project is not intended to be a multi-platform engine.
