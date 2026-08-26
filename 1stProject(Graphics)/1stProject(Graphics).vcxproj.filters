@@ -66,6 +66,18 @@
     <ClCompile Include="..\third_party\ImGUI\imgui_widgets.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="..\third_party\ImGUI\imgui.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="..\third_party\ImGUI\imgui_draw.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="..\third_party\ImGUI\imgui_tables.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="..\third_party\ImGUI\imgui_widgets.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\Shader.h">

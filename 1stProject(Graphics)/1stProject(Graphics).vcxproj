@@ -116,12 +116,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\masse\source\repos\yuchan-lee-kr\Mini-Graphics-Engine-by-OpenGL-\include;C:\Users\masse\source\repos\yuchan-lee-kr\Mini-Graphics-Engine-by-OpenGL-\third_party\ImGUI;C:\Users\masse\source\repos\yuchan-lee-kr\Mini-Graphics-Engine-by-OpenGL-\third_party\ImGUI\backends;C:\Users\masse\source\repos\yuchan-lee-kr\Mini-Graphics-Engine-by-OpenGL-\third_party\Assimp.3.0.0\build\native\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../include;../third_party/ImGUI;../third_party/ImGUI\backends;../third_party/Assimp.3.0.0\build\native\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\masse\OneDrive\바탕 화면\MyFile\작업\1stProject(Graphics)\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>../include/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>opengl32.lib;glfw3.lib;user32.lib;gdi32.lib;shell32.lib</AdditionalDependencies>
     </Link>
     <ProjectReference>

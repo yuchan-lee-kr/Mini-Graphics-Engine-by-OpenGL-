@@ -669,7 +669,7 @@ int main()
 		"Fonts/NotoSansKR-VariableFont_wght.ttf",
 		18.0f);
 	io.FontDefault = font;
-	loadModelAssimp("bmw2.obj");
+	loadModelAssimp("sibenik.obj");
 	Mathmethod::Vec3 corners[8] =
 	{
 		Mathmethod::Vec3(MinVertex.x,MinVertex.y,MinVertex.z),
