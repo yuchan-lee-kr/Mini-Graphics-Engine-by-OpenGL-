@@ -9,10 +9,6 @@
 </p>
 
 <p align="center">
-  <img src="images/main_preview.png" width="850">
-</p>
-
-<p align="center">
   <img src="https://img.shields.io/badge/C++-17-blue">
   <img src="https://img.shields.io/badge/OpenGL-Renderer-green">
   <img src="https://img.shields.io/badge/GLSL-Shaders-purple">
